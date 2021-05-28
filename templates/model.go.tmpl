@@ -1,0 +1,118 @@
+package {{.PkgName}}
+
+import (
+    "context"
+    {{range .StdPkgs}}
+      "{{.}}"
+    {{end}}
+
+    {{range .NonStdPkgs}}
+      "{{.}}"
+    {{end}}
+)
+
+
+// {{.StructName}} struct is a row record of the "{{.Name}}" table.
+type {{.StructName}} struct {
+    {{range .Columns}}
+      {{- .FieldName}} {{.GoType}} `gorm:"{{if .IsPrimaryKey}}primaryKey;{{end}}column:{{.Name}};type:{{.DBType -}};"`
+    {{end}}
+
+    {{if .HasForeignTable}} // foreign tables {{end -}}
+    {{range .ForeignTables}}
+      {{.FieldName}} {{if .Nullable}}*{{end}}{{.StructName -}}
+    {{end}}
+}
+
+// TableName sets the table name for "{{.Name}}".
+func ({{.ShortStructName}} *{{.StructName}}) TableName() string {
+  return "{{.Name}}"
+}
+
+// Count{{.StructName}} returns the count of all "{{.Name}}" records.
+func (db *DB) Count{{.StructName}}(ctx context.Context) (int64, error) {
+  gdb := db.db.WithContext(ctx)
+  var count int64
+  if err := gdb.Table("{{.Name}}").Count(&count).Error; err != nil {
+    return 0, err
+  }
+  return count, nil
+}
+
+{{if .HasPrimaryKey}}
+// Exists{{.StructName}} checks if a {{.StructName}} record
+// with given id exists in "{{.Name}}" table.
+func (db *DB) Exists{{.StructName}}(ctx context.Context, id {{.PkGoType}}) (bool, error) {
+  gdb := db.db.WithContext(ctx)
+  var exists bool
+  query := "SELECT EXISTS(SELECT 1 FROM \"{{.Name}}\" WHERE id = ?) AS found"
+  if err := gdb.Raw(query, id).Scan(&exists).Error; err != nil {
+    return false, err
+  }
+  return exists, nil
+}
+{{end}}
+
+// Create{{.StructName}} inserts a single {{.StructName}} record to "{{.Name}}" table.
+func (db *DB) Create{{.StructName}}(ctx context.Context, rec *{{.StructName}}) (*{{.StructName}}, error) {
+  gdb := db.db.WithContext(ctx)
+  if err := gdb.Create(rec).Error; err != nil {
+    return nil, err
+  }
+  return rec, nil
+}
+
+// BatchCreate{{.StructName}} inserts multiple {{.StructName}} records to "{{.Name}}" table.
+func (db *DB) BatchCreate{{.StructName}}(ctx context.Context, recs []*{{.StructName}}) ([]*{{.StructName}}, error) {
+  gdb := db.db.WithContext(ctx)
+  if err := gdb.Create(recs).Error; err != nil {
+    return nil, err
+  }
+  return recs, nil
+}
+
+{{if .HasPrimaryKey}}
+// Find{{.StructName}} fetches a single record with given id from "{{.Name}}" table.
+func (db *DB) Find{{.StructName}}(ctx context.Context, id {{.PkGoType}}) (*{{.StructName}}, error) {
+  gdb := db.db.WithContext(ctx)
+  var rec {{.StructName}}
+  if err := gdb.First(&rec, id).Error; err != nil {
+    return nil, err
+  }
+  return &rec, nil
+}
+{{end}}
+
+{{if .HasPrimaryKey}}
+// FindAll{{.StructName}} fetches a multiple records with given ids from "{{.Name}}" table.
+func (db *DB) FindAll{{.StructName}}(ctx context.Context, ids []{{.PkGoType}}) ([]*{{.StructName}}, error) {
+  gdb := db.db.WithContext(ctx)
+  var recs []*{{.StructName}}
+  if err := gdb.Find(&recs, ids).Error; err != nil {
+    return nil, err
+  }
+  return recs, nil
+}
+{{end}}
+
+// Update{{.StructName}} updates a single {{.StructName}} record in "{{.Name}}" table.
+func (db *DB) Update{{.StructName}}(ctx context.Context, rec *{{.StructName}}) error {
+  gdb := db.db.WithContext(ctx)
+  return gdb.Save(rec).Error
+}
+
+{{if .HasPrimaryKey}}
+// Delete{{.StructName}} deletes a single {{.StructName}} record from "{{.Name}}" table.
+func (db *DB) Delete{{.StructName}}(ctx context.Context, id {{.PkGoType}}) error {
+  gdb := db.db.WithContext(ctx)
+  return gdb.Delete(&{{.StructName}}{}, id).Error
+}
+{{end}}
+
+{{if .HasPrimaryKey}}
+// BatchDelete{{.StructName}} deletes multiple {{.StructName}} records from "{{.Name}}" table.
+func (db *DB) BatchDelete{{.StructName}}(ctx context.Context, ids []{{.PkGoType}}) error {
+  gdb := db.db.WithContext(ctx)
+  return gdb.Delete(&{{.StructName}}{}, ids).Error
+}
+{{end}}

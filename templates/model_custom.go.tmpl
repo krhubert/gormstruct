@@ -1,0 +1,43 @@
+package {{.PkgName}}
+
+import (
+  "gorm.io/gorm"
+)
+
+//
+// keeps all hooks and methods for {{.StructName}} struct
+// IMPORTANT: this file won't be overwritten.
+//
+// EXAMPLE:
+// func (db *DB) Get{{.StructName}}BySomeFiled (*{{.StructName}}, error) {
+//    var row *{{.StructName}}
+//    return row, db.db.Where("some_filed = ?", "value").First(&row).Error
+// }
+//
+
+// BeforeSave is a hook that runs before saving {{.StructName}}.
+func ({{.ShortStructName}} *{{.StructName}}) BeforeSave(tx *gorm.DB) error { return nil }
+
+// BeforeCreate is a hook that runs before creating {{.StructName}}.
+func ({{.ShortStructName}} *{{.StructName}}) BeforeCreate(tx *gorm.DB) error { return nil }
+
+// BeforeUpdate is a hook that runs before updating {{.StructName}}.
+func ({{.ShortStructName}} *{{.StructName}}) BeforeUpdate(tx *gorm.DB) error { return nil }
+
+// BeforeDelete is a hook that runs before deleting {{.StructName}}.
+func ({{.ShortStructName}} *{{.StructName}}) BeforeDelete(tx *gorm.DB) error { return nil }
+
+// AfterSave is a hook that runs after saving {{.StructName}}.
+func ({{.ShortStructName}} *{{.StructName}}) AfterSave(tx *gorm.DB) error { return nil }
+
+// AfterCreate is a hook that runs after creating {{.StructName}}.
+func ({{.ShortStructName}} *{{.StructName}}) AfterCreate(tx *gorm.DB) error { return nil }
+
+// AfterUpdate is a hook that runs after updating {{.StructName}}.
+func ({{.ShortStructName}} *{{.StructName}}) AfterUpdate(tx *gorm.DB) error { return nil }
+
+// AfterDelete is a hook that runs after deleting {{.StructName}}.
+func ({{.ShortStructName}} *{{.StructName}}) AfterDelete(tx *gorm.DB) error { return nil }
+
+// AfterFind is a hook that runs after finding {{.StructName}}.
+func ({{.ShortStructName}} *{{.StructName}}) AfterFind(tx *gorm.DB) error { return nil }

@@ -1,0 +1,44 @@
+package {{.PkgName}}
+
+import (
+  "gorm.io/driver/postgres"
+  "gorm.io/gorm"
+)
+
+// DB is a database handle for all models.
+type DB struct {
+  db *gorm.DB
+}
+
+// Open opens a postgres database specified by data source name.
+func Open(dataSourceName string) (*DB, error) {
+  db, err := gorm.Open(postgres.Open(dataSourceName), &gorm.Config{})
+  if err != nil {
+    return nil, err
+  }
+  return &DB{db: db}, nil
+}
+
+// Close closes a db connection.
+func (db *DB) Close() error {
+  sqlDB, err := db.db.DB()
+  if err != nil {
+    return err
+  }
+  return sqlDB.Close()
+}
+
+// Begin begins a transaction.
+func (db *DB) Begin() *DB {
+  return &DB{db: db.db.Begin()}
+}
+
+// Rollback rollback a transaction.
+func (db *DB) Rollback() error {
+  return db.db.Rollback().Error
+}
+
+// Commit commits a transaction.
+func (db *DB) Commit() error {
+  return db.db.Commit().Error
+}
