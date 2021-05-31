@@ -47,13 +47,8 @@ func main() {
 			continue
 		}
 
-		pks, err := dialect.primaryKeys(db, *sqlSchema, name)
+		primaryKeys, err := dialect.primaryKeys(db, *sqlSchema, name)
 		die(err)
-
-		pk := ""
-		if len(pks) > 0 {
-			pk = pks[0]
-		}
 
 		columns, err := dialect.columns(db, *sqlSchema, name)
 		die(err)
@@ -62,14 +57,14 @@ func main() {
 		die(err)
 
 		ti := tableInfo{
-			Name:            name,
-			FileName:        name + ".go",
-			CustomFileName:  name + "_custom.go",
-			PkgName:         *pkgName,
-			StructName:      strcase.ToCamel(name),
-			ShortStructName: strings.ToLower(string(strcase.ToCamel(name)[0])),
-			PrimaryKey:      pk,
-			HasPrimaryKey:   pk != "",
+			Name:              name,
+			FileName:          name + ".go",
+			CustomFileName:    name + "_custom.go",
+			PkgName:           *pkgName,
+			StructName:        filedName(name),
+			ShortStructName:   argName(strcase.ToCamel(name))[:1],
+			HasPrimaryKey:     len(primaryKeys) > 0,
+			HasManyPrimaryKey: len(primaryKeys) > 1,
 		}
 
 		for _, c := range columns {
@@ -78,17 +73,20 @@ func main() {
 				continue
 			}
 
-			isPrimaryKey := pk == c.Name
-			if isPrimaryKey {
-				ti.PkGoType = goTyp.String()
+			if primaryKeys[c.Name] {
+				ti.PrimaryKeys = append(ti.PrimaryKeys, primaryKeyInfo{
+					ColumnName: c.Name,
+					ArgName:    argName(c.Name),
+					GoType:     goTyp.String(),
+				})
 			}
 
 			ftn := foreignTableNames[c.Name]
 			ci := columnInfo{
 				Name:         c.Name,
 				DBType:       c.DataTypeName,
-				IsPrimaryKey: isPrimaryKey,
-				FieldName:    strcase.ToCamel(c.Name),
+				IsPrimaryKey: primaryKeys[c.Name],
+				FieldName:    filedName(c.Name),
 				Nullable:     c.Nullable,
 				GoType:       goTyp.String(),
 			}
@@ -115,8 +113,8 @@ func main() {
 					fieldName += "_rel"
 				}
 				ti.ForeignTables = append(ti.ForeignTables, foreignTableInfo{
-					FieldName:  strcase.ToCamel(fieldName),
-					StructName: strcase.ToCamel(ftn),
+					FieldName:  filedName(fieldName),
+					StructName: filedName(ftn),
 					Nullable:   c.Nullable,
 				})
 			}
@@ -136,6 +134,21 @@ func main() {
 		die(writeGoTmpl("model.go.tmpl", ti.FileName, true, ti))
 		die(writeGoTmpl("model_custom.go.tmpl", ti.CustomFileName, false, ti))
 	}
+}
+
+func filedName(name string) string {
+	if name == "type" {
+		name = "typ"
+	}
+
+	return strcase.ToCamel(name)
+}
+
+func argName(name string) string {
+	if name == "type" {
+		name = "typ"
+	}
+	return strcase.ToLowerCamel(name)
 }
 
 func die(err error) {

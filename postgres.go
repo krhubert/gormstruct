@@ -43,7 +43,7 @@ func (postgresDialect) tables(db *sql.DB, tableSchema string) ([]string, error) 
 	return names, nil
 }
 
-func (postgresDialect) primaryKeys(db *sql.DB, tableSchema, tableName string) ([]string, error) {
+func (postgresDialect) primaryKeys(db *sql.DB, tableSchema, tableName string) (map[string]bool, error) {
 	const query = `
 		SELECT
 			kcu.column_name
@@ -67,15 +67,15 @@ func (postgresDialect) primaryKeys(db *sql.DB, tableSchema, tableName string) ([
 	}
 	defer rows.Close()
 
-	var names []string
+	pks := make(map[string]bool)
 	for rows.Next() {
 		var name string
 		if err = rows.Scan(&name); err != nil {
 			return nil, err
 		}
-		names = append(names, name)
+		pks[name] = true
 	}
-	return names, nil
+	return pks, nil
 }
 
 func (postgresDialect) columns(db *sql.DB, tableSchema, tableName string) ([]postgresColumnInfo, error) {

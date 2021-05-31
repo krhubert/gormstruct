@@ -16,6 +16,5 @@ gormstruct -h
 
 # limitations
 
-- supports one primary key
 - does not support some arrays and user defined types
 - does not support domains

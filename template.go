@@ -20,24 +20,29 @@ type dbInfo struct {
 }
 
 type tableInfo struct {
-	Name            string
 	FileName        string
 	CustomFileName  string
 	PkgName         string
 	StructName      string
 	ShortStructName string
-	PrimaryKey      string
-	PkGoType        string
-	Columns         []columnInfo
+	StdPkgs         []string
+	NonStdPkgs      []string
+
+	Name    string
+	Columns []columnInfo
+
+	PrimaryKeys       []primaryKeyInfo
+	HasPrimaryKey     bool
+	HasManyPrimaryKey bool
+
 	ForeignTables   []foreignTableInfo
-
-	// imports
-	StdPkgs    []string
-	NonStdPkgs []string
-
-	// foreign table
 	HasForeignTable bool
-	HasPrimaryKey   bool
+}
+
+type primaryKeyInfo struct {
+	ColumnName string
+	ArgName    string
+	GoType     string
 }
 
 type foreignTableInfo struct {

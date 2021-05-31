@@ -1,3 +1,21 @@
+{{- define "pksDef"}}
+  {{- range .PrimaryKeys}} {{.ArgName}} {{.GoType}}, {{end -}}
+{{end -}}
+
+{{- define "pksArg"}}
+  {{- range .PrimaryKeys}} {{.ArgName}}, {{end -}}
+{{end -}}
+
+{{- define "pksSql"}}
+  {{- (index .PrimaryKeys 0).ColumnName}} = ? {{range (slice .PrimaryKeys 1)}} AND {{.ColumnName}} = ? {{end -}}
+{{end -}}
+
+{{- define "pkName"}} {{(index .PrimaryKeys 0).ArgName}} {{end -}}
+{{- define "pkNames"}} {{(index .PrimaryKeys 0).ArgName}}s {{end -}}
+{{- define "pkGoType"}} {{(index .PrimaryKeys 0).GoType}} {{end -}}
+{{- define "pkArg"}} {{(index .PrimaryKeys 0).ArgName}} {{(index .PrimaryKeys 0).GoType}} {{end -}}
+{{- define "pkArgs"}} {{(index .PrimaryKeys 0).ArgName}}s {{(index .PrimaryKeys 0).GoType}} {{end -}}
+
 package {{.PkgName}}
 
 import (
@@ -10,7 +28,6 @@ import (
       "{{.}}"
     {{end}}
 )
-
 
 // {{.StructName}} struct is a row record of the "{{.Name}}" table.
 type {{.StructName}} struct {
@@ -42,11 +59,11 @@ func (db *DB) Count{{.StructName}}(ctx context.Context) (int64, error) {
 {{if .HasPrimaryKey}}
 // Exists{{.StructName}} checks if a {{.StructName}} record
 // with given id exists in "{{.Name}}" table.
-func (db *DB) Exists{{.StructName}}(ctx context.Context, id {{.PkGoType}}) (bool, error) {
+func (db *DB) Exists{{.StructName}}(ctx context.Context, {{template "pksDef" .}}) (bool, error) {
   gdb := db.db.WithContext(ctx)
   var exists bool
-  query := "SELECT EXISTS(SELECT 1 FROM \"{{.Name}}\" WHERE id = ?) AS found"
-  if err := gdb.Raw(query, id).Scan(&exists).Error; err != nil {
+  query := "SELECT EXISTS(SELECT 1 FROM \"{{.Name}}\" WHERE {{template "pksSql" .}}) AS found"
+  if err := gdb.Raw(query, {{template "pksArg" .}}).Scan(&exists).Error; err != nil {
     return false, err
   }
   return exists, nil
@@ -63,7 +80,7 @@ func (db *DB) Create{{.StructName}}(ctx context.Context, rec *{{.StructName}}) (
 }
 
 // BatchCreate{{.StructName}} inserts multiple {{.StructName}} records to "{{.Name}}" table.
-func (db *DB) BatchCreate{{.StructName}}(ctx context.Context, recs []*{{.StructName}}) ([]*{{.StructName}}, error) {
+func (db *DB) BatchCreate{{.StructName}}(ctx context.Context, recs ...*{{.StructName}}) ([]*{{.StructName}}, error) {
   gdb := db.db.WithContext(ctx)
   if err := gdb.Create(recs).Error; err != nil {
     return nil, err
@@ -72,23 +89,23 @@ func (db *DB) BatchCreate{{.StructName}}(ctx context.Context, recs []*{{.StructN
 }
 
 {{if .HasPrimaryKey}}
-// Find{{.StructName}} fetches a single record with given id from "{{.Name}}" table.
-func (db *DB) Find{{.StructName}}(ctx context.Context, id {{.PkGoType}}) (*{{.StructName}}, error) {
+// Find{{.StructName}} fetches a single record from "{{.Name}}" table.
+func (db *DB) Find{{.StructName}}(ctx context.Context, {{template "pksDef" .}}) (*{{.StructName}}, error) {
   gdb := db.db.WithContext(ctx)
   var rec {{.StructName}}
-  if err := gdb.First(&rec, id).Error; err != nil {
+  if err := gdb.First(&rec, {{template "pksArg" .}}).Error; err != nil {
     return nil, err
   }
   return &rec, nil
 }
 {{end}}
 
-{{if .HasPrimaryKey}}
+{{if and .HasPrimaryKey (not .HasManyPrimaryKey)}}
 // FindAll{{.StructName}} fetches a multiple records with given ids from "{{.Name}}" table.
-func (db *DB) FindAll{{.StructName}}(ctx context.Context, ids []{{.PkGoType}}) ([]*{{.StructName}}, error) {
+func (db *DB) FindAll{{.StructName}}(ctx context.Context, {{template "pkArgs" .}}) ([]*{{.StructName}}, error) {
   gdb := db.db.WithContext(ctx)
   var recs []*{{.StructName}}
-  if err := gdb.Find(&recs, ids).Error; err != nil {
+  if err := gdb.Find(&recs, {{template "pkNames" .}}).Error; err != nil {
     return nil, err
   }
   return recs, nil
@@ -103,16 +120,16 @@ func (db *DB) Update{{.StructName}}(ctx context.Context, rec *{{.StructName}}) e
 
 {{if .HasPrimaryKey}}
 // Delete{{.StructName}} deletes a single {{.StructName}} record from "{{.Name}}" table.
-func (db *DB) Delete{{.StructName}}(ctx context.Context, id {{.PkGoType}}) error {
+func (db *DB) Delete{{.StructName}}(ctx context.Context, {{template "pksDef" .}}) error {
   gdb := db.db.WithContext(ctx)
-  return gdb.Delete(&{{.StructName}}{}, id).Error
+  return gdb.Delete(&{{.StructName}}{}, {{template "pksArg" .}}).Error
 }
 {{end}}
 
-{{if .HasPrimaryKey}}
+{{if and .HasPrimaryKey (not .HasManyPrimaryKey)}}
 // BatchDelete{{.StructName}} deletes multiple {{.StructName}} records from "{{.Name}}" table.
-func (db *DB) BatchDelete{{.StructName}}(ctx context.Context, ids []{{.PkGoType}}) error {
+func (db *DB) BatchDelete{{.StructName}}(ctx context.Context, {{template "pkArgs" .}}) error {
   gdb := db.db.WithContext(ctx)
-  return gdb.Delete(&{{.StructName}}{}, ids).Error
+  return gdb.Delete(&{{.StructName}}{}, {{template "pkNames" .}}).Error
 }
 {{end}}
