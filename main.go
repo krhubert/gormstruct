@@ -9,6 +9,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/iancoleman/strcase"
+	"github.com/takuoki/gocase"
 )
 
 var (
@@ -140,15 +141,14 @@ func filedName(name string) string {
 	if name == "type" {
 		name = "typ"
 	}
-
-	return strcase.ToCamel(name)
+	return gocase.To(strcase.ToCamel(name))
 }
 
 func argName(name string) string {
 	if name == "type" {
 		name = "typ"
 	}
-	return strcase.ToLowerCamel(name)
+	return gocase.To(strcase.ToLowerCamel(name))
 }
 
 func die(err error) {
