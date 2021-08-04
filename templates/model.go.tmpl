@@ -23,13 +23,13 @@ package {{.PkgName}}
 
 import (
     "context"
-    {{range .StdPkgs}}
+    {{- range .StdPkgs}}
       "{{.}}"
-    {{end}}
+    {{- end}}
 
     {{range .NonStdPkgs}}
       "{{.}}"
-    {{end}}
+    {{- end}}
 )
 
 // {{.StructName}} struct is a row record of the "{{.Name}}" table.
