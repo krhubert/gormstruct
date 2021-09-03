@@ -89,21 +89,15 @@ func (db *DB) Exists{{.StructName}}(ctx context.Context, {{template "pksDef" .}}
 {{end}}
 
 // Create{{.StructName}} inserts a single {{.StructName}} record to "{{.Name}}" table.
-func (db *DB) Create{{.StructName}}(ctx context.Context, rec *{{.StructName}}) (*{{.StructName}}, error) {
+func (db *DB) Create{{.StructName}}(ctx context.Context, rec *{{.StructName}}) error {
   gdb := db.db.WithContext(ctx)
-  if err := gdb.Create(rec).Error; err != nil {
-    return nil, err
-  }
-  return rec, nil
+  return gdb.Create(rec).Error
 }
 
 // BatchCreate{{.StructName}} inserts multiple {{.StructName}} records to "{{.Name}}" table.
-func (db *DB) BatchCreate{{.StructName}}(ctx context.Context, recs ...*{{.StructName}}) ([]*{{.StructName}}, error) {
+func (db *DB) BatchCreate{{.StructName}}(ctx context.Context, recs []*{{.StructName}}) error {
   gdb := db.db.WithContext(ctx)
-  if err := gdb.Create(recs).Error; err != nil {
-    return nil, err
-  }
-  return recs, nil
+  return gdb.Create(recs).Error
 }
 
 {{if .HasPrimaryKey}}
