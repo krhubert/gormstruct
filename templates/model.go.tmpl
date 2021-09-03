@@ -133,6 +133,12 @@ func (db *DB) Update{{.StructName}}(ctx context.Context, rec *{{.StructName}}) e
   return gdb.Save(rec).Error
 }
 
+// BatchUpdate{{.StructName}} updates multiple {{.StructName}} records in "{{.Name}}" table.
+func (db *DB) BatchUpdate{{.StructName}}(ctx context.Context, recs *{{.StructName}}) error {
+  gdb := db.db.WithContext(ctx)
+  return gdb.Save(recs).Error
+}
+
 {{if .HasPrimaryKey}}
 // Delete{{.StructName}} deletes a single {{.StructName}} record from "{{.Name}}" table.
 func (db *DB) Delete{{.StructName}}(ctx context.Context, {{template "pksDef" .}}) error {
