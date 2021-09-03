@@ -35,7 +35,7 @@ import (
 // {{.StructName}} struct is a row record of the "{{.Name}}" table.
 type {{.StructName}} struct {
     {{range .Columns}}
-      {{- .FieldName}} {{.GoType}} `gorm:"{{if .IsPrimaryKey}}primaryKey;{{end}}column:{{.Name}};type:{{.DBType -}};"`
+      {{- .FieldName}} {{.GoType}} `json:"{{.Name}},omitempty" gorm:"{{if .IsPrimaryKey}}primaryKey;{{end}}column:{{.Name}};type:{{.DBType -}};"`
     {{end}}
 
     {{if .HasForeignTable}} // foreign tables {{end -}}
