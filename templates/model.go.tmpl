@@ -54,7 +54,7 @@ func ({{.ShortStructName}} *{{.StructName}}) TableName() string {
 
 {{range .ForeignTables}}
   {{if .Nullable}}
-    // Get{{.FieldName}} returns alywas non-nil {{.FieldName}}.
+    // Get{{.FieldName}} returns always non-nil {{.FieldName}}.
     func ({{$.ShortStructName}} *{{$.StructName}}) Get{{.FieldName}}() *{{.StructName -}} {
       if {{$.ShortStructName}} == nil || {{$.ShortStructName}}.{{.FieldName}} == nil {
         return &{{.StructName -}}{}
