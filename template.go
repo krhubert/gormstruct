@@ -60,7 +60,14 @@ type columnInfo struct {
 	Nullable     bool
 }
 
-func writeGoTmpl(tmplFile, file string, force bool, data interface{}) error {
+func writeGoTmpl(tmplFile, file string, overwrite bool, data interface{}) error {
+	path := filepath.Join(*outDir, file)
+	if !overwrite {
+		if _, err := os.Stat(path); err == nil {
+			return nil
+		}
+	}
+
 	content, err := gotemplates.ReadFile("templates/" + tmplFile)
 	if err != nil {
 		return err
@@ -71,15 +78,7 @@ func writeGoTmpl(tmplFile, file string, force bool, data interface{}) error {
 		return err
 	}
 
-	perms := os.O_RDWR | os.O_CREATE
-	if force {
-		perms |= os.O_TRUNC
-	}
-
-	f, err := os.OpenFile(filepath.Join(*outDir, file), perms, 0666)
-	if !force && os.IsNotExist(err) {
-		return nil
-	}
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		return err
 	}
