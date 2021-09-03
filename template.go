@@ -34,6 +34,7 @@ type tableInfo struct {
 	PrimaryKeys       []primaryKeyInfo
 	HasPrimaryKey     bool
 	HasManyPrimaryKey bool
+	HasBaseModel      bool
 
 	ForeignTables   []foreignTableInfo
 	HasForeignTable bool
@@ -58,6 +59,7 @@ type columnInfo struct {
 	FieldName    string
 	GoType       string
 	Nullable     bool
+	OmitJson     bool
 }
 
 func writeGoTmpl(tmplFile, file string, overwrite bool, data interface{}) error {
