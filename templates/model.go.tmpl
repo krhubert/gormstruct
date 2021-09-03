@@ -49,6 +49,18 @@ func ({{.ShortStructName}} *{{.StructName}}) TableName() string {
   return "{{.Name}}"
 }
 
+{{range .ForeignTables}}
+  {{if .Nullable}}
+    // Get{{.FieldName}} returns alywas non-nil {{.FieldName}}.
+    func ({{$.ShortStructName}} *{{$.StructName}}) Get{{.FieldName}}() *{{.StructName -}} {
+      if {{$.ShortStructName}} == nil || {{$.ShortStructName}}.{{.FieldName}} == nil {
+        return &{{.StructName -}}{}
+      }
+      return {{$.ShortStructName}}.{{.FieldName}}
+    }
+  {{end}}
+{{end}}
+
 // Count{{.StructName}} returns the count of all "{{.Name}}" records.
 func (db *DB) Count{{.StructName}}(ctx context.Context) (int64, error) {
   gdb := db.db.WithContext(ctx)
