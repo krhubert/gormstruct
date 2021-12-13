@@ -1,6 +1,6 @@
 # gormstruct
 
-This tool creates models and CRUD methods for PostgreSQL database.
+Tool to create models and CRUD methods for PostgreSQL database which can be used with [gorm](https://github.com/go-gorm/gorm/).
 
 # usage
 
